@@ -1,0 +1,80 @@
+REATE TABLE users (
+    userID      SERIAL PRIMARY KEY,
+    name        VARCHAR(50) NOT NULL
+);
+
+CREATE TABLE friendships (
+    userID1     INT REFERENCES users(userID),
+    userID2     INT REFERENCES users(userID)
+        CHECK (userID1 != userID2),
+    PRIMARY KEY (userID1, userID2)
+);
+
+--CREATE PROCEDURE friendsym_insert(userID1 integer, userID2 integer)
+--    LANGUAGUE SQL
+--    INSERT INTO friendships(userID2, userID1);
+--END;
+--CREATE TRIGGER friendsym
+--ON friendships 
+--AFTER INSERT
+--AS
+--    EXECUTE PROCEDURE friendsym_insert(userID1, userID2)
+--    FROM INSERTED;
+
+--FOREIGN KEY (EACH ELEMENT OF likedposts) REFERENCES post(postID)
+
+CREATE TABLE post (
+    postID      SERIAL PRIMARY KEY,
+    userID      INT REFERENCES users(userID),
+    title       VARCHAR(100),
+    date        DATE NOT NULL,
+    place       VARCHAR(50),
+    tags        TEXT[]
+        CHECK (tags <@ ARRAY['crypto', 'studying', 'question', 'social'])
+);
+
+CREATE TABLE image_post (
+    imgURL      VARCHAR NOT NULL,
+    filter      VARCHAR
+) INHERITS (post);
+
+CREATE TABLE text_post (
+    textContent VARCHAR NOT NULL
+) INHERITS (post);
+
+CREATE TABLE video_post (
+    vidURL      VARCHAR NOT NULL,
+    codec       VARCHAR(20) NOT NULL
+) INHERITS (post);
+
+--FOREIGN KEY (EACH ELEMENT OF likers) REFERENCES users(userID),
+
+
+CREATE TABLE likes (
+    postID      INT REFERENCES post(postID),
+    userID      INT REFERENCES users(userID),
+    timestamp   TIMESTAMP NOT NULL,
+    PRIMARY KEY(postID, userID)
+);
+
+CREATE TABLE events (
+    eventID     SERIAL PRIMARY KEY,
+    userID      INT REFERENCES users(userID),
+    title       VARCHAR(100) NOT NULL,
+    place       VARCHAR NOT NULL,
+    startDate   TIMESTAMP NOT NULL,
+    endDate     TIMESTAMP NOT NULL CHECK (endDate >= startDate),
+    duration    INT NOT NULL
+);
+
+CREATE TABLE attendees (
+    eventID     INT REFERENCES events(eventID),
+    userID      INT REFERENCES users(userID)
+);
+
+CREATE TABLE subscription (
+    userID  INT REFERENCES users(userID),
+    dop     DATE NOT NULL,
+    paymeth TEXT[] NOT NULL CHECK (paymeth <@ ARRAY['klarna', 'swish', 'card', 'bitcoin']),
+    expDate DATE NOT NULL
+);

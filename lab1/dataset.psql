@@ -1,0 +1,76 @@
+-- Adding users..
+INSERT INTO users (name) VALUES
+('Alice Johnson'),
+('Bob Smith'),
+('Charlie Brown'),
+('David Lee'),
+('Eve White'),
+('Frank Black');
+
+-- Creating friendships
+
+-- Alice (1) and Bob (2) are friends
+INSERT INTO friendships (userID1, userID2) VALUES (1, 2), (2, 1);
+
+-- Bob (2) and Charlie (3) are friends
+INSERT INTO friendships (userID1, userID2) VALUES (2, 3), (3, 2);
+
+-- Charlie (3) and David (4) are friends
+INSERT INTO friendships (userID1, userID2) VALUES (3, 4), (4, 3);
+
+-- Alice (1) and Frank (6) are friends
+INSERT INTO friendships (userID1, userID2) VALUES (1, 6), (6, 1);
+
+-- Create posts of different types
+
+INSERT INTO text_post (userID, title, date, place, tags, textContent) 
+VALUES (2, 'Tips for Staying Focused', '2024-11-07', 'Home Office', ARRAY['studying', 'social'], 'Here are some helpful tips to stay focused while studying!');
+
+INSERT INTO video_post (userID, title, date, tags, vidURL, codec) VALUES
+(2, 'Best Cryptos to Invest In', '2024-11-02', ARRAY['crypto'], 'http://video.url', 'H264');
+
+INSERT INTO image_post (userID, title, date, tags, imgURL, filter) VALUES
+(3, 'Beautiful Nature', '2024-11-03', ARRAY['social', 'studying'], 'http://image.url', 'Vibrant');
+
+-- Add likes to posts (Not working ATM)
+
+--INSERT INTO likes (postID, userID, timestamp) VALUES
+--(1, 2, '2024-11-01 10:00:00'),
+--(1, 3, '2024-11-01 11:00:00');
+--
+--INSERT INTO likes (postID, userID, timestamp) VALUES
+--(2, 1, '2024-11-02 10:00:00'),
+--(2, 3, '2024-11-02 11:00:00'),
+--(2, 4, '2024-11-02 12:00:00');
+--
+--INSERT INTO likes (postID, userID, timestamp) VALUES
+--(3, 2, '2024-11-03 10:00:00'),
+--(3, 5, '2024-11-03 11:00:00'),
+--(3, 6, '2024-11-03 12:00:00');
+
+
+
+-- Create events
+
+-- Alice (userID 1) hosts an event
+INSERT INTO events (userID, title, place, startDate, endDate, duration) VALUES
+(1, 'Tech Talk on Cryptos', 'Conference Room 1', '2024-11-10 09:00:00', '2024-11-10 12:00:00', 180);
+
+-- Create Attendees
+
+-- Only Alice's friends can attend the event
+INSERT INTO attendees (eventID, userID) VALUES
+(1, 2), -- Bob is Alice's friend
+(1, 6); -- Frank is Alice's friend
+
+-- Create subscriptions
+
+INSERT INTO subscription (userID, dop, paymeth, expDate) VALUES
+(1, '2024-10-01', ARRAY['card'], '2024-10-31'),
+(2, '2024-10-05', ARRAY['swish'], '2024-11-04'),
+(3, '2024-10-10', ARRAY['klarna'], '2024-11-09'),
+(4, '2024-10-12', ARRAY['bitcoin'], '2024-11-11'),
+(5, '2024-10-15', ARRAY['card', 'swish'], '2024-11-14'),
+(6, '2024-10-20', ARRAY['swish'], '2024-11-19');
+
+
