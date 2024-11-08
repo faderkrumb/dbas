@@ -23,14 +23,16 @@ CREATE TABLE friendships (
 
 --FOREIGN KEY (EACH ELEMENT OF likedposts) REFERENCES post(postID)
 
+CREATE SEQUENCE postid_seq;
+
 CREATE TABLE post (
-    postID      SERIAL PRIMARY KEY
-    -- userID      INT REFERENCES users(userID),
-    -- title       VARCHAR(100),
-    -- date        DATE NOT NULL,
-    -- place       VARCHAR(50),
-    -- tags        TEXT[]
-    --     CHECK (tags <@ ARRAY['crypto', 'studying', 'question', 'social'])
+    postID      INT NOT NULL DEFAULT nextval('postid_seq'), 
+    userID      INT REFERENCES users(userID),
+    title       VARCHAR(100),
+    date        DATE NOT NULL,
+    place       VARCHAR(50),
+    tags        TEXT[]
+        CHECK (tags <@ ARRAY['crypto', 'studying', 'question', 'social'])
 );
 
 CREATE TABLE image_post (
@@ -46,17 +48,9 @@ CREATE TABLE image_post (
 );
 
 CREATE TABLE text_post (
-    postID      INT REFERENCES post(postID),
-    userID      INT REFERENCES users(userID),
-    title       VARCHAR(100),
-    date        DATE NOT NULL,
-    place       VARCHAR(50),
-    tags        TEXT[]
-        CHECK (tags <@ ARRAY['crypto', 'studying', 'question', 'social']),
-    imgURL      VARCHAR NOT NULL,
     textContent VARCHAR NOT NULL
-);
-
+) INHERITS (post);
+ INHERITS (post)
 CREATE TABLE video_post (
     postID      INT REFERENCES post(postID),
     userID      INT REFERENCES users(userID),
