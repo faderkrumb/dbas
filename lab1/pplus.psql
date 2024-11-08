@@ -1,0 +1,44 @@
+CREATE TABLE employee (
+name    VARCHAR,
+phonenr INT,
+id      PRIMARY KEY INT
+worksat VARCHAR REFERENCES department(departmentname),
+startdate   DATE,
+mentors     INT REFERENCES employee(id) CHECK (mentors != id),
+mentee      INT REFERENCE  employee(id) CHECK (mentee != id)
+);
+
+CREATE TABLE department (
+buildingnr      INT NOT NULL,
+departmentname  PRIMARY KEY 
+);
+
+CREATE TABLE doctor (
+    id   PRIMARY KEY INT REFERENCE employee(id),
+    specialization  VARCHAR,
+    roomnr      INT NOT NULL
+);
+
+
+CREATE TABLE nurse (
+    id      PRIMARY KEY INT REFERENCE employee(id),
+    degree  VARCHAR NOT NULL
+);
+
+
+CREATE TABLE patient (
+    id      PRIMARY KEY INT,
+    diagnosises     VARCHAR,
+    age     INT NOT NULL,
+    name    VARCHAR NOT NULL,
+);
+
+CREATE TABLE treating (
+    treater INT REFERENCES doctor(id),
+    treatee INT REFERENCES patient(id)
+    PRIMARY KEY (treater, treatee)
+);
+
+
+
+
