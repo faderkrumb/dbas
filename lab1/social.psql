@@ -10,19 +10,6 @@ CREATE TABLE friendships (
     PRIMARY KEY (userID1, userID2)
 );
 
---CREATE PROCEDURE friendsym_insert(userID1 integer, userID2 integer)
---    LANGUAGUE SQL
---    INSERT INTO friendships(userID2, userID1);
---END;
---CREATE TRIGGER friendsym
---ON friendships 
---AFTER INSERT
---AS
---    EXECUTE PROCEDURE friendsym_insert(userID1, userID2)
---    FROM INSERTED;
-
---FOREIGN KEY (EACH ELEMENT OF likedposts) REFERENCES post(postID)
-
 CREATE SEQUENCE postid_seq;
 
 CREATE TABLE post (
@@ -36,36 +23,18 @@ CREATE TABLE post (
 );
 
 CREATE TABLE image_post (
-    postID      INT REFERENCES post(postID),
-    userID      INT REFERENCES users(userID),
-    title       VARCHAR(100),
-    date        DATE NOT NULL,
-    place       VARCHAR(50),
-    tags        TEXT[]
-        CHECK (tags <@ ARRAY['crypto', 'studying', 'question', 'social']),
     imgURL      VARCHAR NOT NULL,
     filter      VARCHAR
-);
+) INHERITS (post);
 
 CREATE TABLE text_post (
     textContent VARCHAR NOT NULL
 ) INHERITS (post);
- INHERITS (post)
+
 CREATE TABLE video_post (
-    postID      INT REFERENCES post(postID),
-    userID      INT REFERENCES users(userID),
-    title       VARCHAR(100),
-    date        DATE NOT NULL,
-    place       VARCHAR(50),
-    tags        TEXT[]
-        CHECK (tags <@ ARRAY['crypto', 'studying', 'question', 'social']),
-    imgURL      VARCHAR NOT NULL,
     vidURL      VARCHAR NOT NULL,
     codec       VARCHAR(20) NOT NULL
-);
-
---FOREIGN KEY (EACH ELEMENT OF likers) REFERENCES users(userID),
-
+) INHERITS (post);
 
 CREATE TABLE likes (
     postID      INT REFERENCES post(postID),
