@@ -23,14 +23,28 @@ INSERT INTO friendships (userID1, userID2) VALUES (1, 6), (6, 1);
 
 -- Create posts of different types
 
-INSERT INTO text_post (userID, title, date, place, tags, textContent) 
-VALUES (2, 'Tips for Staying Focused', '2024-11-07', 'Home Office', ARRAY['studying', 'social'], 'Here are some helpful tips to stay focused while studying!');
+INSERT INTO posts(userID, title, date, place, tags) VALUES
+(2, 'Tips', '2024-11-07', 'Home', Array['studying']),
+(2, 'Tops', '2023-10-06', 'Away', Array['social']),
+(3, 'Bops', '2022-09-05', 'Gone', Array['crypto']);
 
-INSERT INTO video_post (userID, title, date, tags, vidURL, codec) VALUES
-(2, 'Best Cryptos to Invest In', '2024-11-02', ARRAY['crypto'], 'http://video.url', 'H264');
+INSERT INTO image_posts(postID, imgurl, filter) VALUES
+(2, 'image.geh', 'shinie');
 
-INSERT INTO image_post (userID, title, date, tags, imgURL, filter) VALUES
-(3, 'Beautiful Nature', '2024-11-03', ARRAY['social', 'studying'], 'http://image.url', 'Vibrant');
+INSERT INTO text_posts(postID, textcontent) VALUES
+(2, 'jag när');
+
+INSERT INTO video_posts(postID, vidURL, codec) VALUES
+(3, 'video-link.se', 'verygoodcodec');
+
+INSERT INTO text_posts (userID, title, date, place, tags, textContent) VALUES 
+('Here are some helpful tips to stay focused while studying!');
+
+INSERT INTO video_posts (userID, title, date, tags, vidURL, codec) VALUES
+('http://video.url', 'H264');
+
+INSERT INTO image_posts (userID, title, date, tags, imgURL, filter) VALUES
+('http://image.url', 'Vibrant');
 
 -- Add likes to posts (Not working ATM)
 

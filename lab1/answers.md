@@ -44,3 +44,11 @@ With triggers we can manipulate data, define data (such as controlling schema
 changes, and enforcing security policies, or control/monitor user sessions
 or log activity).
 
+#4
+1.  SELECT * FROM users;
+2.  SELECT * FROM friendships;
+3.  SELECT * FROM text_posts;
+    SELECT * FROM image_posts;
+    SELECT * FROM movie_posts;
+4.  SELECT * FROM events;
+5.  SELECT * FROM subscriptions;
