@@ -1,0 +1,10 @@
+DROP TABLE attendees;
+DROP TABLE events;
+DROP TABLE friendships;
+DROP TABLE image_post;
+DROP TABLE likes;
+DROP TABLE subscription;
+DROP TABLE text_post;
+DROP TABLE video_post;
+DROP TABLE post;
+DROP TABLE users CASCADE;
