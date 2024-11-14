@@ -1,0 +1,29 @@
+CREATE OR REPLACE FUNCTION on_post_insert()
+RETURNS TRIGGER AS $BODY$
+BEGIN
+INSERT INTO post(postID, userID, title, date, place, tags)
+VALUES (nextval('postid_seq'), new.userID, new.title, new.date, new.place, new.tags);
+RETURN NEW;
+END;
+$BODY$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION on_post_insert()
+RETURNS TRIGGER AS $BODY$
+BEGIN
+INSERT INTO post(userID, title, date, place, tags)
+VALUES (new.userID, new.title, new.date, new.place, new.tags);
+RETURN NEW;
+END;
+$BODY$ LANGUAGE plpgsql;
+
+CREATE TRIGGER on_text_post_trigger
+BEFORE INSERT ON text_post
+FOR EACH ROW EXECUTE PROCEDURE on_post_insert();
+
+CREATE TRIGGER on_image_post_trigger
+AFTER INSERT ON image_post
+FOR EACH ROW EXECUTE PROCEDURE on_post_insert();
+
+CREATE TRIGGER on_video_post_trigger
+AFTER INSERT ON video_post
+FOR EACH ROW EXECUTE PROCEDURE on_post_insert();
