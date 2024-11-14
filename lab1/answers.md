@@ -24,21 +24,21 @@ This is attribute based as both endDate and startDate are in the same column.
 
 c. tags All are attribute-based as we only use one single column to test the constraints.
 
-##Further, database integrity can be maintained by triggers. During the presentation, you should
+## Further, database integrity can be maintained by triggers. During the presentation, you should
 be able to answer the following:
 
-##1. What is a trigger?
+## 1. What is a trigger?
 
 Triggers is a statement that a system executes automatically when any modification
 is made to the database. In a trigger, we first specify when the trigger is to be 
 executed, and then the action to be performed when the trigger executes.
 
-##2. Name 3 events that can cause a trigger to activate
+## 2. Name 3 events that can cause a trigger to activate
 
 INSERT, UPDATE & DELETE.
 
 
-##3. What can be done with triggers?
+## 3. What can be done with triggers?
 
 With triggers we can manipulate data, define data (such as controlling schema
 changes, and enforcing security policies, or control/monitor user sessions
