@@ -1,9 +1,8 @@
 SELECT postID, string_agg(tag,',') FROM PostTag GROUP BY postID;
-SELECT string_agg(tag,',') FROM PostTag GROUP BY postID;
 
 1)
-SELECT Post.title, string_agg(PostTag.tag,',') FROM Post 
-JOIN PostTag ON Post.postID = PostTag.postID GROUP BY Post.title;
+SELECT Post.title, string_agg(PostTag.tag,',') FROM 
+Post JOIN PostTag ON Post.postID = PostTag.postID GROUP BY Post.postID;
 
 
 2)
@@ -11,35 +10,52 @@ Get all posts with their amount of likes.
 SELECT Post.postID, Post.title, count(Likes.postID) FROM Post
 JOIN Likes ON Post.postID = Likes.postID GROUP BY Post.postID;
 
+SELECT 
+Post.postID, 
+Post.title, 
+RANK() OVER (ORDER BY count(Likes.postID) DESC) 
+FROM 
+Post JOIN Likes ON Post.postID = Likes.postID GROUP BY Post.postID;
+
 Get all posts ranked by their amount of likes.
-SELECT postID, title, RANK () OVER (ORDER BY like_count DESC) rank FROM
-(SELECT Post.postID, Post.title, count(Likes.postID) AS like_count FROM Post
-JOIN Likes ON Post.postID = Likes.postID GROUP BY Post.postID) AS temp
+SELECT postID, title, RANK() OVER (ORDER BY like_count DESC) rank FROM
+(SELECT Post.postID, Post.title, count(Likes.postID) AS like_count FROM 
+Post JOIN Likes ON Post.postID = Likes.postID GROUP BY Post.postID) AS temp
 ;
 
 Get all postID and title of posts with a certain tag
-SELECT Post.postID, title FROM Post
-JOIN PostTag ON Post.postID = PostTag.postID 
-WHERE tag = '#leadership' AS temp1
+SELECT Post.postID, title FROM 
+Post JOIN PostTag ON Post.postID = PostTag.postID 
+WHERE tag = '#leadership' 
+;
+
+WITH RankedPosts AS (
+	SELECT
+	TaggedPosts.postID, 
+	TaggedPosts.title, 
+	RANK() OVER (ORDER BY count(Likes.postID) DESC) AS rank 
+	FROM
+	(
+		SELECT Post.postID, title FROM Post
+		JOIN PostTag ON Post.postID = PostTag.postID
+		WHERE tag = '#leadership'
+	) 
+	AS TaggedPosts 
+	JOIN Likes ON TaggedPosts.postID = Likes.postID 
+	GROUP BY TaggedPosts.postID, TaggedPosts.title
+)
+SELECT postID, title, rank
+FROM RankedPosts
+WHERE rank <= 5
 ;
 
 Get all post ranked by likes, with specific tag.
-SELECT temp.postID, temp.title, temp.rank FROM (
-SELECT postID, title, RANK () OVER (ORDER BY like_count DESC) rank FROM
-(SELECT Post.postID, Post.title, count(Likes.postID) AS like_count FROM Post
-JOIN Likes ON Post.postID = Likes.postID GROUP BY Post.postID) AS tem
-) AS temp
-JOIN (
-SELECT Post.postID, title FROM Post
-JOIN PostTag ON Post.postID = PostTag.postID 
-WHERE tag = '#leadership'
-) AS temp1 ON temp.postID = temp1.postID;
-
 SELECT TaggedRankedPosts.postID, 
 TaggedRankedPosts.title, 
 RANK () OVER (ORDER BY like_count DESC) rank 
 FROM
-	(SELECT TaggedPosts.postID, TaggedPosts.title, count(Likes.postID) AS like_count FROM
+	(
+	SELECT TaggedPosts.postID, TaggedPosts.title, count(Likes.postID) AS like_count FROM
 		(
 		SELECT Post.postID, title FROM Post
 		JOIN PostTag ON Post.postID = PostTag.postID
@@ -50,3 +66,5 @@ FROM
 	GROUP BY TaggedPosts.postID, TaggedPosts.title
 	) 
 AS TaggedRankedPosts;
+
+S11

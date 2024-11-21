@@ -1,0 +1,2 @@
+SELECT Post.postID, Post.title, count(Likes.postID) FROM Post
+JOIN Likes ON Post.postID = Likes.postID GROUP BY Post.postID;
