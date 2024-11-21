@@ -1,0 +1,88 @@
+CREATE TABLE users (
+    userID      SERIAL PRIMARY KEY,
+    name        VARCHAR(50) NOT NULL
+);
+
+CREATE TABLE friendships (
+    userID1     INT REFERENCES users(userID),
+    userID2     INT REFERENCES users(userID)
+        CHECK (userID1 != userID2),
+    PRIMARY KEY (userID1, userID2)
+);
+
+--CREATE OR REPLACE PROCEDURE mirror_friendship()
+--LANGUAGE plpgsql
+--AS $BODY$
+--BEGIN
+--INSERT INTO friendships(userID1, userID2)
+--VALUES (new.userID2, new.userID1);
+--COMMIT;
+--END;
+--$BODY$;
+--
+--CREATE TRIGGER on_insert_friendship
+--AFTER INSERT ON friendships
+--FOR EACH ROW EXECUTE PROCEDURE mirror_friendship();
+
+CREATE SEQUENCE postid_seq;
+
+CREATE TABLE posts (
+    postID      INT DEFAULT nextval('postid_seq') NOT NULL PRIMARY KEY, 
+    userID      INT REFERENCES users(userID),
+    title       VARCHAR(100),
+    date        DATE NOT NULL,
+    place       VARCHAR(50),
+    tags        TEXT[]
+        CHECK (tags <@ ARRAY['crypto', 'studying', 'question', 'social'])
+);
+
+CREATE TABLE image_posts (
+    postID      INT REFERENCES posts(postID),
+    imgURL      VARCHAR NOT NULL,
+    filter      VARCHAR, 
+    PRIMARY KEY(postID)
+);
+
+CREATE TABLE text_posts (
+    postID      INT REFERENCES posts(postID),
+    textContent VARCHAR NOT NULL,
+    PRIMARY KEY(postID)
+);
+
+CREATE TABLE video_posts (
+    postID      INT REFERENCES posts(postID),
+    vidURL      VARCHAR NOT NULL,
+    codec       VARCHAR(20) NOT NULL,
+    PRIMARY KEY(postID)
+);
+
+CREATE TABLE likes (
+    postID      INT REFERENCES posts(postID),
+    userID      INT REFERENCES users(userID),
+    timestamp   TIMESTAMP NOT NULL,
+    PRIMARY KEY(postID, userID)
+);
+
+CREATE TABLE events (
+    eventID     SERIAL PRIMARY KEY,
+    userID      INT REFERENCES users(userID),
+    title       VARCHAR(100) NOT NULL,
+    place       VARCHAR NOT NULL,
+    startDate   TIMESTAMP NOT NULL,
+    endDate     TIMESTAMP NOT NULL CHECK (endDate >= startDate),
+    duration    INT NOT NULL
+);
+
+CREATE TABLE attendees (
+    eventID     INT REFERENCES events(eventID),
+    userID      INT REFERENCES users(userID),
+    PRIMARY KEY(eventID, userID)
+);
+
+CREATE TABLE subscription (
+    userID INT REFERENCES users(userID),
+    dop     DATE NOT NULL,
+    paymeth TEXT[] NOT NULL CHECK (paymeth <@ ARRAY['klarna', 'swish', 'card', 'bitcoin']),
+    expDate DATE NOT NULL
+);
+
