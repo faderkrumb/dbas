@@ -1,0 +1,11 @@
+SELECT name FROM users;
+
+SELECT * FROM friendships;
+
+\d text_post;
+\d video_post;
+\d image_post;
+
+SELECT * FROM events;
+
+SELECT * FROM subscription;
