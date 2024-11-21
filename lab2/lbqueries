@@ -152,3 +152,75 @@ postActivity AS (
 	GROUP BY date_part('week', date)
 )
 
+SELECT Users.name, array_agg(Friend.friendID)
+FROM Users JOIN Friend 
+ON Users.userID = Friend.userID 
+WHERE Users.userID = ANY(
+	SELECT friendID
+	FROM Friend
+)
+GROUP BY Friend.FriendID, Users.name;
+
+SELECT
+	users.userID,
+	users.name,
+	CASE 
+		WHEN COUNT(friends.FriendID) > 0 
+		THEN TRUE
+		ELSE FALSE
+	END
+FROM Users LEFT JOIN (
+	SELECT userID, friendID FROM Friend
+	UNION SELECT friendID as userID, userID as FriendID FROM Friend
+) AS friends
+ON Users.userID = friends.UserID
+	GROUP BY users.userID, users.name
+	ORDER BY users.userID;
+
+WITH RECURSIVE chain AS (
+-- Basfall
+	SELECT
+		x.name,
+		x.userID,
+		xy.friendID
+	FROM users x
+		JOIN friend xy ON xy.userID = x.userID
+	WHERE
+		x.userID = 20
+
+	UNION
+	SELECT
+		y.name,
+		y.userID,
+		yz.friendID
+	FROM chain c
+		JOIN users y ON y.userID = c.friendID
+		LEFT JOIN friend yz ON y.userID = yz.userID
+	WHERE NOT EXISTS (
+		SELECT 1
+		FROM friend f
+		WHERE f.userID = c.userID
+		AND f.friendID = yz.friendID
+	)
+)
+SELECT * FROM chain;
+-----------------
+
+SELECT 
+	name 
+FROM users 
+JOIN post ON users.userID = post.userID 
+
+
+WITH likeCounts AS (
+    SELECT
+    	Users.name,
+    	count(Likes.userID)
+    FROM Post
+    	JOIN Likes ON Likes.postID = Post.postID
+    	JOIN Users ON Users.userID = Post.userID
+    WHERE date_part('month', Post.date) = 3 
+    GROUP BY Users.name
+    ORDER BY Users.name
+)
+SELECT * FROM likeCounts;
