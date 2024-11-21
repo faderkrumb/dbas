@@ -1,0 +1,154 @@
+SELECT postID, string_agg(tag,',') FROM PostTag GROUP BY postID;
+
+1)
+SELECT Post.title, string_agg(PostTag.tag,',') FROM 
+Post JOIN PostTag ON Post.postID = PostTag.postID GROUP BY Post.postID;
+
+
+2)
+Get all posts with their amount of likes.
+SELECT Post.postID, Post.title, count(Likes.postID) FROM Post
+JOIN Likes ON Post.postID = Likes.postID GROUP BY Post.postID;
+
+SELECT 
+Post.postID, 
+Post.title, 
+RANK() OVER (ORDER BY count(Likes.postID) DESC) 
+FROM 
+Post JOIN Likes ON Post.postID = Likes.postID GROUP BY Post.postID;
+
+Get all posts ranked by their amount of likes.
+SELECT postID, title, RANK() OVER (ORDER BY like_count DESC) rank FROM
+(SELECT Post.postID, Post.title, count(Likes.postID) AS like_count FROM 
+Post JOIN Likes ON Post.postID = Likes.postID GROUP BY Post.postID) AS temp
+;
+
+Get all postID and title of posts with a certain tag
+SELECT Post.postID, title FROM 
+Post JOIN PostTag ON Post.postID = PostTag.postID 
+WHERE tag = '#leadership' 
+;
+
+WITH RankedPosts AS (
+	SELECT
+	TaggedPosts.postID, 
+	TaggedPosts.title, 
+	RANK() OVER (ORDER BY count(Likes.postID) DESC) AS rank 
+	FROM
+	(
+		SELECT Post.postID, title FROM Post
+		JOIN PostTag ON Post.postID = PostTag.postID
+		WHERE tag = '#leadership'
+	) 
+	AS TaggedPosts 
+	JOIN Likes ON TaggedPosts.postID = Likes.postID 
+	GROUP BY TaggedPosts.postID, TaggedPosts.title
+)
+SELECT postID, title, rank
+FROM RankedPosts
+WHERE rank <= 5
+;
+
+Get all post ranked by likes, with specific tag.
+SELECT TaggedRankedPosts.postID, 
+TaggedRankedPosts.title, 
+RANK () OVER (ORDER BY like_count DESC) rank 
+FROM
+	(
+	SELECT TaggedPosts.postID, TaggedPosts.title, count(Likes.postID) AS like_count FROM
+		(
+		SELECT Post.postID, title FROM Post
+		JOIN PostTag ON Post.postID = PostTag.postID
+		WHERE tag = '#leadership'
+		) 
+	AS TaggedPosts 
+	JOIN Likes ON TaggedPosts.postID = Likes.postID 
+	GROUP BY TaggedPosts.postID, TaggedPosts.title
+	) 
+AS TaggedRankedPosts;
+
+
+S11
+
+SELECT userID FROM subscription WHERE date_part('week', date) = 8;
+
+
+
+WITH AllWeeks AS (
+	SELECT generate_series(1, 30) AS weekNo
+),
+newSubsWeek AS (
+	SELECT
+		date_part('week', date) AS weekNo,
+		COUNT(userID) AS newSubs
+	FROM subscription s1
+	WHERE date_part('week', date) BETWEEN 1 AND 30
+	AND NOT EXISTS (
+		SELECT 1
+		FROM subscription s2
+		WHERE s2.userID = s1.userID
+			AND date_part('week', s2.date) < date_part('week', s1.date)
+	)
+	GROUP BY date_part('week', date)
+),
+renewSubsWeek AS (
+	SELECT
+		date_part('week', date) AS weekNo,
+		COUNT(userID) AS renewSubs
+	FROM subscription s1
+	WHERE date_part('week', date) BETWEEN 1 AND 30
+	AND EXISTS (
+		SELECT 1
+		FROM subscription s2
+		WHERE s2.userID = s1.userID
+			AND date_part('week', s2.date) < date_part('week', s1.date)
+	)
+	GROUP BY date_part('week', date)
+),
+postActivity AS (
+	SELECT
+		date_part('week', date) AS weekNo,
+		COUNT(postID) AS NofPosts
+	FROM post
+	WHERE date_part('week', date) BETWEEN 1 AND 30
+	GROUP BY date_part('week', date)
+)
+SELECT
+	aw.weekNo,	
+	COALESCE(nsw.newSubs, 0) AS newSubs,
+	COALESCE(rsw.renewSubs, 0) AS renewSubs,
+	COALESCE(pa.NofPosts, 0) AS  activity
+	FROM AllWeeks aw
+	LEFT JOIN newSubsWeek nsw
+		ON aw.weekNo = nsw.weekNo
+	LEFT JOIN renewSubsWeek rsw
+		ON aw.weekNo = rsw.weekNo
+	LEFT JOIN postActivity pa
+		ON aw.weekNo = pa.weekNo
+	ORDER BY aw.weekNo;
+
+
+renewSubsWeek AS (
+	SELECT
+		date_part('week', date) AS weekNo,
+		COUNT(userID) AS renewSubs
+	FROM subscription s1
+	WHERE date_part('week', date) BETWEEN 1 AND 30
+	AND EXISTS (
+		SELECT 1
+		FROM subscription s2
+		WHERE s2.userID = s1.userID
+			AND date_part('week', s2.date) < date_part('week', s1.date)
+	)
+	GROUP BY date_part('week', date)
+)
+
+postActivity AS (
+	SELECT
+		date_part('week', date) AS weekNo,
+		COUNT(postID) AS activies
+	FROM post
+	WHERE date_part('week', date) BETWEEN 1 AND 30
+	GROUP BY date_part('week', date)
+)
+
