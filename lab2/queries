@@ -49,22 +49,205 @@ FROM RankedPosts
 WHERE rank <= 5
 ;
 
-Get all post ranked by likes, with specific tag.
-SELECT TaggedRankedPosts.postID, 
-TaggedRankedPosts.title, 
-RANK () OVER (ORDER BY like_count DESC) rank 
-FROM
-	(
-	SELECT TaggedPosts.postID, TaggedPosts.title, count(Likes.postID) AS like_count FROM
-		(
-		SELECT Post.postID, title FROM Post
-		JOIN PostTag ON Post.postID = PostTag.postID
-		WHERE tag = '#leadership'
-		) 
-	AS TaggedPosts 
-	JOIN Likes ON TaggedPosts.postID = Likes.postID 
-	GROUP BY TaggedPosts.postID, TaggedPosts.title
-	) 
-AS TaggedRankedPosts;
 
-S11
+
+3)
+SELECT count(userID) FROM
+(
+	SELECT userID FROM subscription WHERE date_part('week', date) = 8
+	EXCEPT
+	SELECT userID FROM subscription WHERE date_part('week', date) < 8
+) AS NewUsers;
+
+SELECT count(userID) FROM
+(
+	SELECT userID FROM subscription WHERE date_part('week', date) = 8
+	INTERSECT
+	SELECT userID FROM subscription WHERE date_part('week', date) < 8
+) AS OldUsers;
+
+
+SELECT count(postID) FROM Posts WHERE date_part('week', date) = 8 AS Activity;
+
+SELECT userID FROM subscription WHERE 
+
+SELECT Week, 
+--count(Post.postID) AS Activity, 
+count(NewUser.userID) AS NewUsers 
+FROM generate_series(1, 30) AS Week
+FULL JOIN
+(
+SELECT userID FROM subscription WHERE date_part('week', date) = Week
+EXCEPT
+SELECT userID FROM subscription WHERE date_part('week', date) < Week
+)
+AS NewUser ON date_part('week', date) = Week Group BY Week
+FULL JOIN 
+	Post ON date_part('week', Post.date) = Week GROUP BY Week
+ORDER BY Week;
+
+WITH WeekTable AS (
+	SELECT Week FROM generate_series(1, 30) AS Week
+)
+SELECT 
+Week, 
+count(Post.postID) AS Activity, 
+count(subscription.userID) AS NewSubs 
+FROM
+WeekTable
+FULL JOIN
+Post ON date_part('week', Post.date) = Week 
+FULL JOIN
+(
+SELECT userID FROM subscription WHERE date_part('week', date) = Week
+EXCEPT
+SELECT userID FROM subscription WHERE date_part('week', date) < Week
+)
+AS NewUser ON date_part('week', date) = Week Group BY Week
+ORDER BY Week;
+
+WITH TempTable AS (
+	SELECT
+	Week,
+	subscription.userID
+	FROM generate_series(1, 30) AS Week
+	FULL JOIN 
+	subscription ON date_part('week', subscription.date) = Week 
+)
+SELECT * FROM TempTable ORDER BY week;
+
+SELECT                                                                                 users.name,
+    CASE
+        WHEN COUNT(friends.FriendID) > 0
+        THEN TRUE
+        ELSE FALSE
+    END,
+ date
+FROM Users LEFT JOIN (
+    SELECT userID, friendID FROM Friend
+    UNION SELECT friendID as userID, userID as FriendID FROM Friend
+) AS friends
+ON Users.userID = friends.UserID
+JOIN
+(
+SELECT date, userID
+FROM subscription s1
+WHERE NOT EXISTS (
+ SELECT 1
+ FROM subscription s2
+ WHERE s2.userID = s1.userID
+ AND s2.date < s1.date
+))AS temp ON Users.userID = temp.userID
+WHERE date < '2024-02-01'
+GROUP BY users.userID, users.name, temp.date
+ORDER BY name;
+
+SELECT chain AS (
+	SELECT
+		x.name,
+		x.userID,
+		xy.friendID
+		FROM 
+		User x
+		JOIN
+		Friend xy ON xy.userID = x.friendID AND xy.friendID != x.friendID
+		WHERE x.userID = 20
+		UNION SELECT
+		y.name,
+		y.userID
+		yz.friendID
+		FROM chain c
+)
+
+
+WITH RECURSIVE chain AS (
+    SELECT
+        x.name,
+        x.userID,
+        xy.friendID
+    FROM users x
+        JOIN friend xy ON xy.userID = x.userID
+    WHERE
+        x.userID = 20
+
+    UNION
+    SELECT
+        y.name,
+        y.userID,
+        yz.friendID
+    FROM
+        users y
+        JOIN friend yz ON y.userID = yz.userID
+        JOIN chain c ON c.friendID = yz.userID
+)
+SELECT * FROM chain;
+
+WITH RECURSIVE chain AS (
+    SELECT
+        x.name,
+        x.userID,
+        xy.friendID
+    FROM friend xy
+        JOIN friend yz ON xy.friendID = yz.userID
+        JOIN users x ON xy.userID = x.userID
+        JOIN users y ON yz.userID = y.userID
+        JOIN users z ON yz.friendID = z.userID
+    WHERE
+        xy.friendID != z.userID
+        AND  x.userID = 20
+    --SELECT
+    --    x.name,
+    --    x.userID,
+    --    xy.friendID
+    --FROM users x
+    --    JOIN friend xy ON xy.userID = x.userID
+    --WHERE
+    --    x.userID = 20
+
+    UNION
+    SELECT
+        y.name,
+        y.userID,
+        yz.friendID
+    FROM
+        users y
+        JOIN friend yz ON y.userID = yz.userID
+        INNER JOIN chain c ON c.friendID = yz.userID
+)
+
+
+
+WITH likeCounts AS (
+	SELECT
+	Users.name,
+	count(Likes.userID) >= 50
+	FROM Post
+	JOIN Likes ON Likes.postID = Post.postID
+	JOIN Users ON Users.userID = Post.userID
+	WHERE date_part('month', Post.date) = 3 
+	GROUP BY Users.name
+	ORDER BY Users.name
+)
+SELECT * FROM likeCounts;
+
+
+SELECT
+Users.name,
+count(Likes.userID)
+FROM Post
+JOIN Likes ON Likes.postID = Post.postID
+JOIN Users ON Users.userID = Post.userID
+WHERE date_part('month', Post.date) = 3 
+GROUP BY Users.userID, Users.name
+ORDER BY Users.name;
+
+SELECT
+Users.name,
+Users.userID,
+count(Likes.postID) >= 50
+FROM Post
+JOIN Users ON Users.userID = Post.userID
+JOIN Likes ON Likes.postID = Post.postID
+WHERE date_part('month', Post.date) = 3
+GROUP BY Users.userID, Users.name
+ORDER BY Users.name;

@@ -1,0 +1,161 @@
+1)
+SELECT 
+Post.title, 
+string_agg(PostTag.tag,',') 
+FROM Post 
+JOIN PostTag ON Post.postID = PostTag.postID 
+GROUP BY Post.postID
+ORDER BY Post.title
+;
+
+--------------------------------------------------
+
+2)
+WITH RankedPosts AS (
+	SELECT
+	TaggedPosts.postID,
+	TaggedPosts.title,
+	RANK() OVER (ORDER BY count(Likes.postID) DESC) AS rank
+	FROM
+	(
+		SELECT Post.postID, title FROM Post
+		JOIN PostTag ON Post.postID = PostTag.postID
+		WHERE tag = '#leadership'
+	)
+	AS TaggedPosts
+	JOIN Likes ON TaggedPosts.postID = Likes.postID
+	GROUP BY TaggedPosts.postID, TaggedPosts.title
+)
+SELECT postID, title, rank
+FROM RankedPosts
+WHERE rank <= 5
+
+
+--------------------------------------------------
+
+3)
+WITH AllWeeks AS (
+    SELECT generate_series(1, 30) AS weekNo
+),
+newSubsWeek AS (
+    SELECT
+        date_part('week', date) AS weekNo,
+        COUNT(userID) AS newSubs
+    FROM subscription s1
+    WHERE date_part('week', date) BETWEEN 1 AND 30
+    AND NOT EXISTS (
+        SELECT 1
+        FROM subscription s2
+        WHERE s2.userID = s1.userID
+            AND date_part('week', s2.date) < date_part('week', s1.date)
+    )
+    GROUP BY date_part('week', date)
+),
+renewSubsWeek AS (
+    SELECT
+        date_part('week', date) AS weekNo,
+        COUNT(userID) AS renewSubs
+    FROM subscription s1
+    WHERE date_part('week', date) BETWEEN 1 AND 30
+    AND EXISTS (
+        SELECT 1
+        FROM subscription s2
+        WHERE s2.userID = s1.userID
+            AND date_part('week', s2.date) < date_part('week', s1.date)
+    )
+    GROUP BY date_part('week', date)
+),
+postActivity AS (
+    SELECT
+        date_part('week', date) AS weekNo,
+        COUNT(postID) AS NofPosts
+    FROM post
+    WHERE date_part('week', date) BETWEEN 1 AND 30
+    GROUP BY date_part('week', date)
+)
+SELECT
+    aw.weekNo,    
+    COALESCE(nsw.newSubs, 0) AS newSubs,
+    COALESCE(rsw.renewSubs, 0) AS renewSubs,
+    COALESCE(pa.NofPosts, 0) AS  activity
+    FROM AllWeeks aw
+    LEFT JOIN newSubsWeek nsw
+        ON aw.weekNo = nsw.weekNo
+    LEFT JOIN renewSubsWeek rsw
+        ON aw.weekNo = rsw.weekNo
+    LEFT JOIN postActivity pa
+        ON aw.weekNo = pa.weekNo
+    ORDER BY aw.weekNo;
+
+--------------------------------------------------
+
+4)
+SELECT                                                                                 users.name,
+    CASE
+        WHEN COUNT(friends.FriendID) > 0
+        THEN TRUE
+        ELSE FALSE
+    END,
+ date
+FROM Users LEFT JOIN (
+    SELECT userID, friendID FROM Friend
+    UNION SELECT friendID as userID, userID as FriendID FROM Friend
+) AS friends
+ON Users.userID = friends.UserID
+JOIN
+(
+SELECT date, userID
+FROM subscription s1
+WHERE NOT EXISTS (
+ SELECT 1
+ FROM subscription s2
+ WHERE s2.userID = s1.userID
+ AND s2.date < s1.date
+))AS temp ON Users.userID = temp.userID
+WHERE date < '2024-02-01'
+GROUP BY users.userID, users.name, temp.date
+ORDER BY name;
+
+--------------------------------------------------
+
+5)
+WITH RECURSIVE chain AS (
+-- Basfall
+    SELECT
+        x.name,
+        x.userID,
+        xy.friendID
+    FROM users x
+        JOIN friend xy ON xy.userID = x.userID
+    WHERE
+        x.userID = 20
+    UNION
+    SELECT
+        y.name,
+        y.userID,
+        yz.friendID
+    FROM chain c
+        JOIN users y ON y.userID = c.friendID
+        LEFT JOIN friend yz ON y.userID = yz.userID
+    WHERE NOT EXISTS (
+        SELECT 1
+        FROM friend f
+        WHERE f.userID = c.userID
+        AND f.friendID = yz.friendID
+    )
+)
+SELECT * FROM chain;
+
+--------------------------------------------------
+Penis)
+SELECT
+Users.name,
+Users.userID,
+count(Likes.postID) >= 50
+FROM Post
+JOIN Users ON Users.userID = Post.userID
+JOIN Likes ON Likes.postID = Post.postID
+WHERE date_part('month', Post.date) = 3
+GROUP BY Users.userID, Users.name
+ORDER BY Users.name;
+
