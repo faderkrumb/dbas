@@ -1,39 +1,43 @@
 1)
+
 SELECT 
-Post.title, 
-string_agg(PostTag.tag,',') 
+    Post.title, 
+    string_agg(PostTag.tag,',') 
 FROM Post 
-JOIN PostTag ON Post.postID = PostTag.postID 
+    JOIN PostTag ON Post.postID = PostTag.postID 
 GROUP BY Post.postID
-ORDER BY Post.title
-;
+ORDER BY Post.title;
 
 --------------------------------------------------
 
 2)
+
 WITH RankedPosts AS (
 	SELECT
-	TaggedPosts.postID,
-	TaggedPosts.title,
+	    TaggedPosts.postID,
+	    TaggedPosts.title,
 	RANK() OVER (ORDER BY count(Likes.postID) DESC) AS rank
 	FROM
 	(
 		SELECT Post.postID, title FROM Post
 		JOIN PostTag ON Post.postID = PostTag.postID
 		WHERE tag = '#leadership'
-	)
-	AS TaggedPosts
-	JOIN Likes ON TaggedPosts.postID = Likes.postID
+	) AS TaggedPosts
+	    JOIN Likes ON TaggedPosts.postID = Likes.postID
 	GROUP BY TaggedPosts.postID, TaggedPosts.title
 )
-SELECT postID, title, rank
+SELECT 
+    postID, 
+    title, 
+    rank
 FROM RankedPosts
-WHERE rank <= 5
+WHERE rank <= 5;
 
 
 --------------------------------------------------
 
 3)
+
 WITH AllWeeks AS (
     SELECT generate_series(1, 30) AS weekNo
 ),
@@ -43,12 +47,12 @@ newSubsWeek AS (
         COUNT(userID) AS newSubs
     FROM subscription s1
     WHERE date_part('week', date) BETWEEN 1 AND 30
-    AND NOT EXISTS (
-        SELECT 1
-        FROM subscription s2
-        WHERE s2.userID = s1.userID
+        AND NOT EXISTS (
+            SELECT 1
+            FROM subscription s2
+            WHERE s2.userID = s1.userID
             AND date_part('week', s2.date) < date_part('week', s1.date)
-    )
+        )
     GROUP BY date_part('week', date)
 ),
 renewSubsWeek AS (
@@ -57,12 +61,12 @@ renewSubsWeek AS (
         COUNT(userID) AS renewSubs
     FROM subscription s1
     WHERE date_part('week', date) BETWEEN 1 AND 30
-    AND EXISTS (
-        SELECT 1
-        FROM subscription s2
-        WHERE s2.userID = s1.userID
+        AND EXISTS (
+            SELECT 1
+            FROM subscription s2
+            WHERE s2.userID = s1.userID
             AND date_part('week', s2.date) < date_part('week', s1.date)
-    )
+        )
     GROUP BY date_part('week', date)
 ),
 postActivity AS (
@@ -90,6 +94,7 @@ SELECT
 --------------------------------------------------
 
 4)
+
 SELECT                                                                                 users.name,
     CASE
         WHEN COUNT(friends.FriendID) > 0
@@ -97,21 +102,22 @@ SELECT                                                                          
         ELSE FALSE
     END,
  date
-FROM Users LEFT JOIN (
-    SELECT userID, friendID FROM Friend
-    UNION SELECT friendID as userID, userID as FriendID FROM Friend
-) AS friends
-ON Users.userID = friends.UserID
-JOIN
-(
-SELECT date, userID
-FROM subscription s1
-WHERE NOT EXISTS (
- SELECT 1
- FROM subscription s2
- WHERE s2.userID = s1.userID
- AND s2.date < s1.date
-))AS temp ON Users.userID = temp.userID
+FROM Users 
+    LEFT JOIN (
+        SELECT userID, friendID FROM Friend
+        UNION SELECT friendID as userID, userID as FriendID FROM Friend
+    ) AS friends ON Users.userID = friends.UserID
+    JOIN (
+        SELECT 
+            date, 
+            userID
+        FROM subscription s1
+        WHERE NOT EXISTS (
+            SELECT 1
+            FROM subscription s2
+            WHERE s2.userID = s1.userID
+            AND s2.date < s1.date
+    )) AS temp ON Users.userID = temp.userID
 WHERE date < '2024-02-01'
 GROUP BY users.userID, users.name, temp.date
 ORDER BY name;
@@ -119,6 +125,7 @@ ORDER BY name;
 --------------------------------------------------
 
 5)
+
 WITH RECURSIVE chain AS (
 -- Basfall
     SELECT
@@ -147,14 +154,15 @@ WITH RECURSIVE chain AS (
 SELECT * FROM chain;
 
 --------------------------------------------------
-Penis)
+P+)
+
 SELECT
-Users.name,
-Users.userID,
-count(Likes.postID) >= 50
+    Users.name,
+    Users.userID,
+    count(Likes.postID) >= 50
 FROM Post
-JOIN Users ON Users.userID = Post.userID
-JOIN Likes ON Likes.postID = Post.postID
+    JOIN Users ON Users.userID = Post.userID
+    JOIN Likes ON Likes.postID = Post.postID
 WHERE date_part('month', Post.date) = 3
 GROUP BY Users.userID, Users.name
 ORDER BY Users.name;
