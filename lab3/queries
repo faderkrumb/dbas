@@ -1,0 +1,37 @@
+1) Show a list of all countries with exactly 1 (one) bordering country.
+WITH SymBorders AS (
+	SELECT Country1, count(Country2) as num
+	FROM (
+		SELECT Country1, Country2 FROM Borders
+		UNION
+		SELECT Country2 As Country1, Country1 AS Country2 From Borders
+	) AS temp
+	GROUP BY Country1
+)
+SELECT Country.Name, SymBorders.num
+FROM 
+SymBorders
+JOIN
+Country ON SymBorders.Country1 = Country.Code
+WHERE num = 1
+ORDER BY Country;
+
+2) Show a list containing number of speakers of each language ordered desc,
+WITH LangSpoken AS (
+	SELECT Language, CAST(sum(Population * Percentage / 100) AS INT) Speakers
+	FROM Spoken
+	JOIN Country
+	ON Spoken.Country = Country.Code
+	GROUP BY Language
+) SELECT * FROM LangSpoken WHERE Speakers IS NOT NULL ORDER BY Speakers DESC;
+
+3) Which bordering countries have the greatest contrast in wealth (GDP).
+WITH GiddipyRatio AS (
+	SELECT Country1, C1.GDP AS GDP1 , Country2, C2.GDP AS GDP2, 
+	CAST((C2.GDP / C1.GDP) AS INT) AS ratio
+	FROM Borders
+	JOIN Economy C1 ON Borders.Country1 = C1.Country
+	JOIN Economy C2 ON Borders.Country2 = C2.Country
+) SELECT * FROM GiddipyRatio
+WHERE ratio IS NOT NULL
+ORDER BY ratio DESC;

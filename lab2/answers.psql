@@ -96,12 +96,8 @@ SELECT
 4)
 
 SELECT                                                                                 users.name,
-    CASE
-        WHEN COUNT(friends.FriendID) > 0
-        THEN TRUE
-        ELSE FALSE
-    END,
- date
+    count(friends.FriendID) > 0 AS hasfriend, 
+    date
 FROM Users 
     LEFT JOIN (
         SELECT userID, friendID FROM Friend
@@ -158,7 +154,6 @@ P+)
 
 SELECT
     Users.name,
-    Users.userID,
     count(Likes.postID) >= 50
 FROM Post
     JOIN Users ON Users.userID = Post.userID
