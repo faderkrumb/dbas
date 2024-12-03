@@ -35,3 +35,6 @@ WITH GiddipyRatio AS (
 ) SELECT * FROM GiddipyRatio
 WHERE ratio IS NOT NULL
 ORDER BY ratio DESC;
+
+P+)
+
