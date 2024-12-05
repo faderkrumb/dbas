@@ -1,3 +1,4 @@
+Part 1
 1) Show a list of all countries with exactly 1 (one) bordering country.
 WITH SymBorders AS (
 	SELECT Country1, count(Country2) as num
@@ -38,5 +39,69 @@ WITH GiddipyRatio AS (
 WHERE ratio IS NOT NULL AND Country1 != Country2
 ORDER BY ratio DESC;
 
-P+)
+Part 2
+1) Views allow for querying without actually replicating the query, which is
+especially useful for complex queries. It also allows enables greater control of
+security as permissions can be granted to a user on a view without granting them
+access to the table, which allows hiding of sensitive data.
+2. For non-materialized views, the query is stored in the database.
+   For non-materialized views, the result of the query is stored in the database.
+3. If the data should be accessed often, it is better to use materialized views
+since it reduces computation times.
+4. There is no additional storage or maintanence cost as the data is not physically stored and is
+  dynamically updated.
 
+P+)
+WITH RECURSIVE chain AS (
+	WITH SymBorders AS (
+		SELECT Country1, Country2
+		FROM (
+			SELECT Country1, Country2 FROM Borders
+			UNION
+			SELECT Country2 As Country1, Country1 AS Country2 From Borders
+		) AS temp
+	)
+	SELECT
+		Country2 AS current,
+		1 AS Dist
+	FROM SymBorders 
+	WHERE Country1 = 'S'
+	
+	UNION
+	SELECT 
+		next.Country2,
+		c.Dist + 1
+	FROM SymBorders next CROSS JOIN chain c
+	WHERE c.current = next.Country1 AND c.Dist < 5
+)
+SELECT current AS code, Name, min(dist) 
+FROM chain 
+JOIN Country ON Country.Code = chain.current
+WHERE current != 'S' 
+GROUP BY Country.Name, current 
+ORDER BY min, Name ASC;
+
+WITH RECURSIVE chain AS (
+	SELECT
+	Name AS Origin,
+	Name,
+	CAST(Name AS VARCHAR) as Path,
+	1 AS Depth,
+	Length
+	FROM River 
+	WHERE Name IN ('Yangtze', 'Nile', 'Amazonas', 'Rhein', 'Mississippi', 'Donau')
+
+	UNION
+	SELECT
+	c.Origin,
+	branch.Name,
+	c.Path || '-' || branch.Name AS Path,
+	c.Depth + 1,
+	c.Length + branch.Length AS Length
+	FROM River branch CROSS JOIN chain c
+	WHERE branch.River = c.name
+)
+SELECT RANK() OVER (ORDER BY Depth ASC), Path, Depth, Length FROM
+chain JOIN (
+	SELECT Origin, max(Depth) FROM chain GROUP BY Origin
+) AS temp ON temp.Origin = chain.Origin AND temp.max = chain.Depth;
