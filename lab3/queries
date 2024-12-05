@@ -30,10 +30,12 @@ WITH GiddipyRatio AS (
 	SELECT Country1, C1.GDP AS GDP1 , Country2, C2.GDP AS GDP2, 
 	CAST((C2.GDP / C1.GDP) AS INT) AS ratio
 	FROM Borders
-	JOIN Economy C1 ON Borders.Country1 = C1.Country
-	JOIN Economy C2 ON Borders.Country2 = C2.Country
+	JOIN Economy C1 ON 
+		(Borders.Country1 = C1.Country OR Borders.Country2 = C1.Country)
+	JOIN Economy C2 ON 
+		(Borders.Country1 = C2.Country OR Borders.Country2 = C2.Country)
 ) SELECT * FROM GiddipyRatio
-WHERE ratio IS NOT NULL
+WHERE ratio IS NOT NULL AND Country1 != Country2
 ORDER BY ratio DESC;
 
 P+)
