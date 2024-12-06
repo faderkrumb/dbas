@@ -24,7 +24,8 @@ WITH LangSpoken AS (
 	JOIN Country
 	ON Spoken.Country = Country.Code
 	GROUP BY Language
-) SELECT * FROM LangSpoken WHERE Speakers IS NOT NULL ORDER BY Speakers DESC;
+) SELECT Language, COALESCE(Speakers, 0) AS speakers FROM LangSpoken 
+ORDER BY Speakers DESC;
 
 3) Which bordering countries have the greatest contrast in wealth (GDP).
 WITH GiddipyRatio AS (
@@ -71,8 +72,8 @@ WITH RECURSIVE chain AS (
 	SELECT 
 		next.Country2,
 		c.Dist + 1
-	FROM SymBorders next CROSS JOIN chain c
-	WHERE c.current = next.Country1 AND c.Dist < 5
+	FROM SymBorders next JOIN chain c
+    ON c.current = next.Country1 AND c.Dist < 5
 )
 SELECT current AS code, Name, min(dist) 
 FROM chain 
@@ -98,8 +99,8 @@ WITH RECURSIVE chain AS (
 	c.Path || '-' || branch.Name AS Path,
 	c.Depth + 1,
 	c.Length + branch.Length AS Length
-	FROM River branch CROSS JOIN chain c
-	WHERE branch.River = c.name
+	FROM River branch JOIN chain c
+    ON branch.River = c.name
 )
 SELECT RANK() OVER (ORDER BY Depth ASC), Path, Depth, Length FROM
 chain JOIN (
