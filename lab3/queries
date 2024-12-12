@@ -18,7 +18,7 @@ WHERE num = 1
 ORDER BY Country;
 
 2) Show a list containing number of speakers of each language ordered desc,
-WITH LangSpoken AS (
+	WITH LangSpoken AS (
 	SELECT Language, CAST(sum(Population * Percentage / 100) AS INT) Speakers
 	FROM Spoken
 	JOIN Country
@@ -29,6 +29,9 @@ ORDER BY Speakers DESC;
 
 3) Which bordering countries have the greatest contrast in wealth (GDP).
 WITH GiddipyRatio AS (
+	WITH 
+)
+WITH GiddipyRatio AS (
 	SELECT Country1, C1.GDP AS GDP1 , Country2, C2.GDP AS GDP2, 
 	CAST((C2.GDP / C1.GDP) AS INT) AS ratio
 	FROM Borders
@@ -36,9 +39,41 @@ WITH GiddipyRatio AS (
 		(Borders.Country1 = C1.Country OR Borders.Country2 = C1.Country)
 	JOIN Economy C2 ON 
 		(Borders.Country1 = C2.Country OR Borders.Country2 = C2.Country)
+	WHERE C1.Country != C2.Country
 ) SELECT * FROM GiddipyRatio
 WHERE ratio IS NOT NULL AND Country1 != Country2
 ORDER BY ratio DESC;
+
+WITH GiddipyRatio AS (
+	SELECT * FROM Borders 
+	JOIN Economy C1 ON 
+		(Borders.Country1 = C1.Country OR Borders.Country2 = C1.Country)
+	JOIN Economy C2 ON 
+		(Borders.Country1 = C2.Country OR Borders.Country2 = C2.Country)
+	WHERE C1.Country != C2.Country
+) SELECT * FROM GiddipyRatio;
+WHERE ratio IS NOT NULL AND Country1 != Country2
+ORDER BY ratio DESC;
+
+WITH GiddipyRatio AS (
+	WITH SymBorders AS (
+		SELECT Country1, Country2
+		FROM (
+			SELECT Country1, Country2 FROM Borders
+			UNION
+			SELECT Country2 As Country1, Country1 AS Country2 From Borders
+		) AS temp
+	) 
+	SELECT Country1, C1.GDP AS GDP1, Country2, C2.GDP AS GDP2,
+	CAST((C2.GDP / C1.GDP) AS INT) AS Ratio
+	FROM SymBorders
+	JOIN Economy C1 ON
+		SymBorders.Country1 = C1.Country
+	JOIN Economy C2 ON
+		SymBorders.Country2 = C2.Country
+) SELECT * FROM GiddipyRatio
+ORDER BY Country1 DESC;
+
 
 Part 2
 1) Views allow for querying without actually replicating the query, which is
@@ -102,7 +137,9 @@ WITH RECURSIVE chain AS (
 	FROM River branch JOIN chain c
     ON branch.River = c.name
 )
+SELECT Origin, max(Depth) FROM chain GROUP BY Origin;
 SELECT RANK() OVER (ORDER BY Depth ASC), Path, Depth, Length FROM
 chain JOIN (
 	SELECT Origin, max(Depth) FROM chain GROUP BY Origin
-) AS temp ON temp.Origin = chain.Origin AND temp.max = chain.Depth;
+) AS temp ON temp.Origin = chain.Origin AND temp.max = chain.Depth
+ORDER BY Length;
