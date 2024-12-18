@@ -1,5 +1,6 @@
 import psycopg2
 import re
+from psycopg2.extensions import AsIs
 
 """
 Note: It's essential never to include database credentials in code pushed to GitHub.
@@ -12,8 +13,8 @@ Remember to follow best practices for secure coding in production environments.
 conn = psycopg2.connect(
     host="psql-dd1368-ht23.sys.kth.se",
     database="lbergli",
-    user="simonsev",
-    password="egbvJJab")
+    user="lbergli",
+    password="9Prr8H9S")
 print(conn)
 
 # Create a cursor. The cursor allows you to execute database queries.
@@ -37,33 +38,46 @@ def search_airport():
     search_by_type = input(" 1. IATA\n 2. Country \n 3. Both\n")
     query = ""
     if search_by_type == "1":
-        search_by = input("search for\n")
-        query = "SELECT IATACode, Name, Country FROM Airport WHERE IATACode LIKE '%" + search_by + "%';"
-    elif search_by_type == "2":
-        search_by = input("search for\n")
-        query = "SELECT IATACode, Name, Country FROM Airport WHERE Name LIKE '%" + search_by + "%';"
+        search_by = input("search for IATA\n")
+        query = """
+        SELECT IATACode, Name, Country
+        FROM airport
+        WHERE IATACode = %s;
+        """
+        cur.execute(query, (search_by,))
+    elif search_by_type == "2":        
+        search_by = input("search for name\n")
+        query = """
+            SELECT IATACode, Name, Country
+            FROM airport
+            WHERE NAME LIKE %s;
+            """
+        cur.execute(query, (search_by,))
     else:
-        search_by = input("search for\n")
-    query = "SELECT IATACode, Name, Country FROM Airport WHERE Name LIKE '%" + search_by + "%' OR IATACode = '" + search_by + "';"
-
-    cur.execute(query)
+        search_by = input("search for Name AITA\n")
+        both = search_by.split()
+        query = """
+            SELECT IATACode, Name, Country
+            FROM airport
+            WHERE NAME LIKE %s OR IATACode = %s;
+            """
+        cur.execute(query, (both[0], both[1],))
     result = cur.fetchall()
     print(result)
+    cur.commit()
 
 def countries_speak():
     lang = input("what lenguade\n")
-    query = """SELECT Country.Name, CAST((Country.Population * Spoken.Percentage)/100 AS INT) FROM
+    query = """
+        SELECT Country.Name, CAST((Country.Population * Spoken.Percentage)/100 AS INT) FROM
         Country
         JOIN
         Spoken ON Country.Code = Spoken.Country
-        WHERE Spoken.Language = '""" + lang + """'
+        WHERE Spoken.Language = %s
         ORDER BY Country;"""
-    cur.execute(query)
+    cur.execute(query, (lang,))
     result = cur.fetchall()
     print(result)
-    #titles = [row[0] for row in result]
-
-    #print(titles)
 
 def yummy_desert():
     name = input("Desert name:\n")
@@ -72,50 +86,67 @@ def yummy_desert():
     country = input("Desert country:\n")
     coord = input("Desert coord:\n")
 
-    check = "SELECT * FROM Province WHERE Name = '" + province + "' AND Country = '" + country + "';"
-    cur.execute(check)
+    check = """
+        SELECT * FROM Province 
+        WHERE Name = %s AND Country = %s;"""
+    cur.execute(check, (province, country,))
     check_res = cur.fetchall()
     if check_res == []:
         print("U stupid")
         return
 
-    check_9_provinces = "SELECT Province FROM geo_Desert WHERE Desert = '" + name + "';"
-    cur.execute(check_9_provinces)
+    ################################################################
+    # P+
+
+    check_9_provinces = """
+        SELECT Province 
+        FROM geo_Desert 
+        WHERE Desert = %s;"""
+    cur.execute(check_9_provinces, (name,))
     check_9_res = cur.fetchall()
-    if len(check_9_provinces) >= 9:
+    if len(check_9_res) >= 9:
         print("A desert cant 9 province")
         return
 
-#    check_area = """SELECT Province 
-#    FROM geo_Desert 
-#    JOIN
-#    Province ON geo_Desert.Province = Province.Name 
-#    WHERE Desert = '""" + name + "' AND " + area + " > 30 * Province.Area"
-
-    check_area = "SELECT Province FROM Province WHERE Name = '" + province + "' AND " + area + " > 30 * Area;"
-    cur.execute(check_area)
-    print(check_area + "\n")
+    check_area = """
+        SELECT Province 
+        FROM Province 
+        WHERE Name = %s AND %s > 30 * Area;"""
+    cur.execute(check_area, (province, area,))
     check_area_res = cur.fetchall()
     if len(check_area_res) > 0:
         print("Deser too phat")
         return
 
-    check_deserts_country = "SELECT Desert FROM geo_Desert WHERE Country = '" + country + "';"
-    cur.execute(check_deserts_country)
+    check_deserts_country = """
+        SELECT Desert 
+        FROM geo_Desert 
+        WHERE Country = %s;"""
+    cur.execute(check_deserts_country, (country,))
     check_deserts_country_res = cur.fetchall()
     if len(check_deserts_country_res) >= 20:
         print("Too mamy desert there brother")
         return
+    
+    #######################################################
+    # Back to P
 
-    check_des = "SELECT * FROM Desert WHERE Name = '" + name + "';"
-    cur.execute(check_des)
+    check_des = "SELECT * FROM Desert WHERE Name = %s;"
+    cur.execute(check_des, (name,))
     check_des_res = cur.fetchall()
 
-    insert_geo = "INSERT INTO geo_Desert VALUES('" + province + "','" + country + "','" + name + "');"
-    cur.execute(insert_geo)
+    insert_geo = """
+        INSERT INTO geo_Desert 
+        VALUES(%s, %s, %s);"""
+    cur.execute(insert_geo, (province, country, name,))
     if check_des_res == []:
-        insert_des = "INSERT INTO Desert VALUES('" + name + "', '" + area + "', '(" + coord + ")');"
-        cur.execute(insert_des)
+        print("Inserting into desert")
+        insert_des = """
+            INSERT INTO Desert 
+            VALUES(%s, %s, (%s));"""
+        cur.execute(insert_des, (name, area, AsIs(coord)))
+
+    # Just for debugging output
 
     cur.execute("SELECT * FROM geo_Desert WHERE Country = '" + country + "';")
     geo_res = cur.fetchall()
@@ -123,19 +154,11 @@ def yummy_desert():
     cur.execute("SELECT * FROM Desert WHERE Name = '" + name + "';")
     des_res = cur.fetchall()
     print(des_res)
-    print("DELETE * FROM geo_Desert WHERE Name = '" + name + "';")
-    print("DELETE * FROM Desert WHERE Name = '" + name + "';")
+    #conn.commit()
+    #print("DELETE * FROM geo_Desert WHERE Name = '" + name + "';")
+    #print("DELETE * FROM Desert WHERE Name = '" + name + "';")
 
 
-# Simple function to get all books with a specific genre.
-#def get_book_title_by_genre():
-#    genre = input("Please enter a genre: ")
-#    query = f"SELECT books.title FROM books LEFT JOIN genre ON books.bookid = genre.bookid WHERE genre.genre = '{genre}'"
-#    cur.execute(query)
-#    result = cur.fetchall()
-#    titles = [row[0] for row in result]
-
-#    print(titles)
 
 if __name__ == "__main__":
     # Example:
@@ -159,3 +182,6 @@ if __name__ == "__main__":
 
     # Close the connection to the database.
     conn.close()
+
+    # SQL Injection P+
+    # usersearch = "'; DROP TABLE fines; --"
