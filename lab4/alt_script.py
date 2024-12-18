@@ -34,8 +34,18 @@ def program_loop():
             print("Bruh u stupid")
         print("\n")
 def search_airport():
-    search_by = input("ärpord\n")
-    query = "SELECT IATACode, Name, Country FROM Airport WHERE Name LIKE '%" + search_by + "%' OR IATACode ;"
+    search_by_type = input(" 1. IATA\n 2. Country \n 3. Both\n")
+    query = ""
+    if search_by_type == "1":
+        search_by = input("search for\n")
+        query = "SELECT IATACode, Name, Country FROM Airport WHERE IATACode LIKE '%" + search_by + "%';"
+    elif search_by_type == "2":
+        search_by = input("search for\n")
+        query = "SELECT IATACode, Name, Country FROM Airport WHERE Name LIKE '%" + search_by + "%';"
+    else:
+        search_by = input("search for\n")
+    query = "SELECT IATACode, Name, Country FROM Airport WHERE Name LIKE '%" + search_by + "%' OR IATACode = '" + search_by + "';"
+
     cur.execute(query)
     result = cur.fetchall()
     print(result)
@@ -72,15 +82,30 @@ def yummy_desert():
     check_9_provinces = "SELECT Province FROM geo_Desert WHERE Desert = '" + name + "';"
     cur.execute(check_9_provinces)
     check_9_res = cur.fetchall()
-    if len(check_res) >= 9:
+    if len(check_9_provinces) >= 9:
         print("A desert cant 9 province")
         return
 
-    check_area = """SELECT Province 
-    FROM geo_Desert 
-    JOIN
-    Province ON geo_Desert.Province = Province.Name 
-    WHERE Desert = '""" + name + "' AND " + area + " > 30 * Province.Area"
+#    check_area = """SELECT Province 
+#    FROM geo_Desert 
+#    JOIN
+#    Province ON geo_Desert.Province = Province.Name 
+#    WHERE Desert = '""" + name + "' AND " + area + " > 30 * Province.Area"
+
+    check_area = "SELECT Province FROM Province WHERE Name = '" + province + "' AND " + area + " > 30 * Area;"
+    cur.execute(check_area)
+    print(check_area + "\n")
+    check_area_res = cur.fetchall()
+    if len(check_area_res) > 0:
+        print("Deser too phat")
+        return
+
+    check_deserts_country = "SELECT Desert FROM geo_Desert WHERE Country = '" + country + "';"
+    cur.execute(check_deserts_country)
+    check_deserts_country_res = cur.fetchall()
+    if len(check_deserts_country_res) >= 20:
+        print("Too mamy desert there brother")
+        return
 
     check_des = "SELECT * FROM Desert WHERE Name = '" + name + "';"
     cur.execute(check_des)
