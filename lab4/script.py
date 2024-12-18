@@ -24,8 +24,8 @@ def program_loop():
         search_for = input("""What would you like to do? \n 1. Search for an airport.
  2. See speakers of a language. \n 3. Input a desert.\n""")
 
-        if search_for == "1":
-            search_airport()
+        if search_for == "1": 
+            search_airport()    
         elif  search_for == "2":
             countries_speak()
         elif search_for == "3":
@@ -61,12 +61,28 @@ def yummy_desert():
     province = input("Desert province:\n")
     country = input("Desert country:\n")
     coord = input("Desert coord:\n")
-    check = "SELECT * FROM Province WHERE NAME = '" + province + "' AND Country = '" + country + "';"
-    check_res = cur.execute(check)
-    print(check_res)
-    insert = " INSERT INTO geo_Desert VALUES( '" + province + "','" + country + "','" + name + "');"
 
-#    insert = "INSERT INTO Desert VALUES('" + 
+    check = "SELECT * FROM Province WHERE Name = '" + province + "' AND Country = '" + country + "';"
+    cur.execute(check)
+    check_res = cur.fetchall()
+    if check_res == []:
+        print("U stupid")
+        return
+    
+    insert_geo = "INSERT INTO geo_Desert VALUES('" + province + "','" + country + "','" + name + "');"
+    cur.execute(insert_geo)
+    insert_des = "INSERT INTO Desert VALUES('" + name + "', '" + area + "', '(" + coord + ")');"
+    cur.execute(insert_des)
+    cur.execute("SELECT * FROM geo_Desert WHERE Country = '" + country + "';")
+    geo_res = cur.fetchall()
+    print(geo_res)
+    cur.execute("SELECT * FROM Desert WHERE Name = '" + name + "';")
+    des_res = cur.fetchall()
+    print(des_res)
+    print("DELETE * FROM geo_Desert WHERE Name = '" + name + "';")
+    print("DELETE * FROM Desert WHERE Name = '" + name + "';")
+    
+
 
 # Simple function to get all books with a specific genre.
 #def get_book_title_by_genre():
@@ -86,7 +102,7 @@ if __name__ == "__main__":
     program_loop()
     print("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%")
     countries_speak()
-
+    
     #cur.execute("SELECT * FROM Country")
 
     # Print the first row returned.
@@ -99,4 +115,4 @@ if __name__ == "__main__":
     #print(cur.fetchall())
 
     # Close the connection to the database.
-conn.close()
+    conn.close()

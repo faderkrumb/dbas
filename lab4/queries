@@ -1,0 +1,7 @@
+SELECT Name, (Population * Speakers) FROM
+Country
+JOIN
+Population ON Country.Code = Population.Country
+JOIN
+Spoken ON Country.Code = Spoken.Country
+WHERE Language = 'Spanish';
