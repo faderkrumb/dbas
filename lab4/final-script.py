@@ -23,7 +23,7 @@ cur = conn.cursor()
 def program_loop():
     while True:
         search_for = input("""What would you like to do? \n 1. Search for an airport.
- 2. See speakers of a language. \n 3. Input a desert.\n""")
+ 2. See speakers of a language. \n 3. Input a desert.\n 4. Commit\n""")
 
         if search_for == "1": 
             search_airport()    
@@ -31,11 +31,13 @@ def program_loop():
             countries_speak()
         elif search_for == "3":
             yummy_desert()
+        elif search_for == "4":
+            conn.commit()
         else:
             print("Bruh u stupid")
         print("\n")
 def search_airport():
-    search_by_type = input(" 1. IATA\n 2. Country \n 3. Both\n")
+    search_by_type = input(" 1. IATA\n 2. Name \n 3. Both\n")
     query = ""
     if search_by_type == "1":
         search_by = input("search for IATA\n")
@@ -50,9 +52,10 @@ def search_airport():
         query = """
             SELECT IATACode, Name, Country
             FROM airport
-            WHERE NAME LIKE %s%;
+            WHERE NAME LIKE %s;
             """
-        cur.execute(query, (search_by,))
+        cur.execute(query, (f"%{search_by}%",))
+        #cur.execute(query, ("%" + search_by + "%",))
     else:
         search_by = input("search for Name AITA\n")
         both = search_by.split()
@@ -64,7 +67,6 @@ def search_airport():
         cur.execute(query, (both[0], both[1],))
     result = cur.fetchall()
     print(result)
-    #cur.commit()
 
 def countries_speak():
     lang = input("what lenguade\n")
@@ -166,8 +168,8 @@ if __name__ == "__main__":
     # cur.execute("SELECT * from genre ")
     #cur.execute("SELECT * FROM Country")
     program_loop()
-    print("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%")
-    countries_speak()
+    #print("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%")
+    #countries_speak()
     
     #cur.execute("SELECT * FROM Country")
 
@@ -181,7 +183,7 @@ if __name__ == "__main__":
     #print(cur.fetchall())
 
     # Close the connection to the database.
-    conn.close()
+    #conn.close()
 
     # SQL Injection P+
     # usersearch = "'; DROP TABLE fines; --"

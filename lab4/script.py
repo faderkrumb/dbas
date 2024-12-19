@@ -76,21 +76,27 @@ def yummy_desert():
         print("A desert cant 9 province")
         return
 
-    check_area = """SELECT Province 
-    FROM geo_Desert 
+    check_area = """SELECT Province
+    FROM geo_Desert
     JOIN
-    Province ON geo_Desert.Province = Province.Name 
+    Province ON geo_Desert.Province = Province.Name
     WHERE Desert = '""" + name + "' AND " + area + " > 30 * Province.Area"
+    cur.execute(check_area)
+    check_area_res = cur.fetchall()
+    if len(check_area_res) > 0:
+        print("Desert too phat")
+        return
+
 
     check_des = "SELECT * FROM Desert WHERE Name = '" + name + "';"
     cur.execute(check_des)
     check_des_res = cur.fetchall()
-
-    insert_geo = "INSERT INTO geo_Desert VALUES('" + province + "','" + country + "','" + name + "');"
-    cur.execute(insert_geo)
     if check_des_res == []:
         insert_des = "INSERT INTO Desert VALUES('" + name + "', '" + area + "', '(" + coord + ")');"
         cur.execute(insert_des)
+
+    insert_geo = "INSERT INTO geo_Desert VALUES('" + province + "','" + country + "','" + name + "');"
+    cur.execute(insert_geo)
 
     cur.execute("SELECT * FROM geo_Desert WHERE Country = '" + country + "';")
     geo_res = cur.fetchall()
