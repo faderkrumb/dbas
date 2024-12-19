@@ -64,7 +64,7 @@ def search_airport():
             FROM airport
             WHERE NAME LIKE %s OR IATACode = %s;
             """
-        cur.execute(query, (both[0], both[1],))
+        cur.execute(query, (f"%{both[0]}%", both[1],))
     result = cur.fetchall()
     print(result)
 
