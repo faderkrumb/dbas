@@ -25,8 +25,8 @@ def program_loop():
         search_for = input("""What would you like to do? \n 1. Search for an airport.
  2. See speakers of a language. \n 3. Input a desert.\n 4. Commit\n""")
 
-        if search_for == "1": 
-            search_airport()    
+        if search_for == "1":
+            search_airport()
         elif  search_for == "2":
             countries_speak()
         elif search_for == "3":
@@ -64,7 +64,7 @@ def search_airport():
             FROM airport
             WHERE NAME LIKE %s OR IATACode = %s;
             """
-        cur.execute(query, (both[0], both[1],))
+        cur.execute(query, (f"%{both[0]}%", both[1],))
     result = cur.fetchall()
     print(result)
 
