@@ -1,12 +1,14 @@
 1.
 No feedback was given, thus no changes have been made.
 
-2.
+2. 
+
 A virtual view is just a stored query that runs when a user wants to see the view.
 A materialized view runs the query when it is created and stores the resulting data.
 
-3.
-CREATE VIEW getAlluser1sFriends AS
+3. 
+```
+CREATE VIEW getAllUser1sFriends AS
     SELECT u.name
     FROM Users u JOIN (
         SELECT userID1, userID2 FROM friendships
@@ -14,17 +16,20 @@ CREATE VIEW getAlluser1sFriends AS
     ) AS f
     ON u.userID = f.UserID2
     WHERE f.userID1 = 1;
+```
 
 4.
+
 a) True.
 b) False.
 c) False.
 d) True.
 
 5.
-We werent sure wether to create a function or procedure, since the task says t create a
+We weren't sure whether to create a function or procedure, since the task says to create a
 procedure that returns the result, we ended up creating both a function and a procedure
 that is pretty close to 'returning' the result.
+```
 CREATE OR REPLACE FUNCTION
 investment_return 
 (initial_investment INTEGER, 
@@ -43,7 +48,9 @@ begin
     return investment_result;
 end;
 $$;
+```
 
+```
 CREATE OR REPLACE PROCEDURE 
 investment_return
 (initial_investment INTEGER, 
@@ -58,17 +65,19 @@ INTO investment_result;
 return;
 END
 $$;
+```
 
 6.
 a) True.
 b) False.
 
 7.
+
 An index in a database is basically a reference to one or more columns in a table. It can, for example, be used to efficiently query
 large tables for a small amount of data. Instead of looking through the entire table and selecting all the needed rows, you can search by index and
 only look for the data in the rows pertaining to a certain index, resulting in a more efficient query.
 
 8.
-a) false
-b) true
-c) true
+a) False.
+b) True.
+c) True.
